@@ -1,4 +1,4 @@
-interface Point {
+export interface Point {
 	x: number;
 	y: number;
 }
@@ -100,7 +100,7 @@ class RectangleBoundary implements Boundary {
 	}
 }
 
-class QuadTree {
+export default class QuadTree {
 	boundary: RectangleBoundary;
 	capacity: number;
 	divided: boolean;
@@ -149,21 +149,21 @@ class QuadTree {
 		return points;
 	}
 
-	add({ x, y }: Point) {
-		if (!this.boundary.contains({ x, y })) return false;
+	add(p: Point) {
+		if (!this.boundary.contains(p)) return false;
 
 		if (this.points.length < this.capacity) {
-			this.points.push({ x, y });
+			this.points.push(p);
 			return true;
 		}
 
 		if (!this.divided) this.divide();
 
 		return (
-			this.one.add({ x, y }) ||
-			this.two.add({ x, y }) ||
-			this.three.add({ x, y }) ||
-			this.four.add({ x, y })
+			this.one.add(p) ||
+			this.two.add(p) ||
+			this.three.add(p) ||
+			this.four.add(p)
 		);
 	}
 
