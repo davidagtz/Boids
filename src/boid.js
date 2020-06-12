@@ -70,11 +70,26 @@ class Boid {
 		this.findNeighbors();
 		this._acc = new p5.Vector();
 		this.align();
-		this._acc.limit(0.5);
+		this.avoid();
+		this._acc.limit(0.25);
 
 		this.velocity.x += this._acc.x;
 		this.velocity.y += this._acc.y;
 		this.velocity.limit(3);
+		if (this.velocity.mag() < 2) this.velocity.setMag(2);
+	}
+
+	avoid() {
+		const acc = new p5.Vector();
+
+		for (const n of this._neighbors) {
+			const to = createVector(this.x - n.x, this.y - n.y);
+			to.setMag(this.view.r / to.mag());
+			acc.add(to);
+		}
+
+		// acc.limit(2);
+		this._acc.add(acc);
 	}
 
 	align() {
