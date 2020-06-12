@@ -26,4 +26,5 @@ function draw() {
 
 		boid.update();
 	}
+	// noLoop();
 }

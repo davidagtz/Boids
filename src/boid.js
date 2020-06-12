@@ -9,12 +9,6 @@ class Boid {
 			this.velocity.setMag(2);
 		} else this.velocity = velocity;
 
-		this._draw = {};
-		this._draw.vec = this.velocity.copy().setMag(25);
-
-		this._draw.ort = this._draw.vec.copy().rotate(Math.PI / 2);
-		this._draw.ort.div(4);
-
 		this.tree = tree;
 	}
 
@@ -27,15 +21,19 @@ class Boid {
 			else ellipse(this.x, this.y, this.view.r);
 		}
 
+		const vec = this.velocity.copy().setMag(25);
+		const ort = vec.copy().rotate(Math.PI / 2);
+		ort.div(4);
+
 		noStroke();
 		fill(255);
 		triangle(
-			this.x + this._draw.ort.x,
-			this.y + this._draw.ort.y,
-			this.x - this._draw.ort.x,
-			this.y - this._draw.ort.y,
-			this.x + this._draw.vec.x,
-			this.y + this._draw.vec.y
+			this.x + ort.x,
+			this.y + ort.y,
+			this.x - ort.x,
+			this.y - ort.y,
+			this.x + vec.x,
+			this.y + vec.y
 		);
 
 		// if (this._neighbors) {
@@ -48,18 +46,55 @@ class Boid {
 	}
 
 	update() {
-		this.findNeighbors();
-
 		this.x += this.velocity.x;
 		this.y += this.velocity.y;
 
-		if (this.x < 0) this.x = width;
-		if (this.x > width) this.x = 0;
-		if (this.y < 0) this.y = height;
-		if (this.y > height) this.y = 0;
+		if (this.x < 0) {
+			this.x = 0;
+			this.velocity.x *= -1;
+		} else if (this.x > width) {
+			this.x = width;
+			this.velocity.x *= -1;
+		}
+		if (this.y < 0) {
+			this.y = 0;
+			this.velocity.y *= -1;
+		} else if (this.y > height) {
+			this.y = height;
+			this.velocity.y *= -1;
+		}
 
 		this.view.x = this.x;
 		this.view.y = this.y;
+
+		this.findNeighbors();
+		this._acc = new p5.Vector();
+		this.align();
+		this._acc.limit(0.5);
+
+		this.velocity.x += this._acc.x;
+		this.velocity.y += this._acc.y;
+		this.velocity.limit(3);
+	}
+
+	align() {
+		const acc = new p5.Vector();
+
+		for (const n of this._neighbors) {
+			acc.add(n.velocity);
+		}
+		if (this._neighbors.length !== 0) {
+			acc.div(this._neighbors.length);
+
+			// Finding the orthongal correction
+			let c = this.velocity.dot(this.velocity);
+			c /= acc.dot(this.velocity);
+			acc.mult(c);
+
+			acc.sub(this.velocity);
+
+			this._acc.add(acc);
+		}
 	}
 
 	findNeighbors() {
