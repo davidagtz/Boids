@@ -1,86 +1,58 @@
-export interface Point {
-	x: number;
-	y: number;
-}
+class CircleBoundary {
+	type = "circle";
 
-interface Boundary {
-	x: number;
-	y: number;
-	type: "circle" | "rect";
-	intersects: (b: Boundary) => boolean;
-	contains: (p: Point) => boolean;
-}
-
-class CircleBoundary implements Boundary {
-	x: number;
-	y: number;
-	r: number;
-	type: "circle";
-
-	constructor(x: number, y: number, r: number) {
+	constructor(x, y, r) {
 		this.x = x;
 		this.y = y;
 		this.r = r;
 	}
 
-	intersects(b: Boundary) {
+	intersects(b) {
 		if (b.type === "circle") {
-			const bound = b as CircleBoundary;
 			const sum = this.r + bound.r;
-			const d = Math.hypot(this.x - bound.x, this.y - bound.y);
+			const d = Math.hypot(this.x - b.x, this.y - b.y);
 			return d <= sum;
 		} else if (b.type === "rect") {
-			const bound = b as RectangleBoundary;
+			const dx = Math.abs(this.x - (b.width / 2 + b.x));
+			const dy = Math.abs(this.y - (b.height / 2 + b.y));
 
-			const dx = Math.abs(this.x - (bound.width / 2 + bound.x));
-			const dy = Math.abs(this.y - (bound.height / 2 + bound.y));
+			if (dx > this.r + b.width / 2) return false;
+			if (dy > this.r + b.height / 2) return false;
 
-			if (dx > this.r + bound.width / 2) return false;
-			if (dy > this.r + bound.height / 2) return false;
+			if (dx <= b.width / 2) return true;
+			if (dy <= b.height / 2) return true;
 
-			if (dx <= bound.width / 2) return true;
-			if (dy <= bound.height / 2) return true;
-
-			const dist = Math.hypot(
-				dx - bound.width / 2,
-				dy - bound.height / 2
-			);
+			const dist = Math.hypot(dx - b.width / 2, dy - b.height / 2);
 
 			return dist <= this.r;
 		}
 		return false;
 	}
 
-	contains(p: Point) {
+	contains(p) {
 		return Math.hypot(p.x - this.x, p.y - this.y) <= this.r;
 	}
 }
 
-class RectangleBoundary implements Boundary {
-	x: number;
-	y: number;
-	width: number;
-	height: number;
-	type: "rect";
+class RectangleBoundary {
+	type = "rect";
 
-	constructor(x: number, y: number, w: number, h: number) {
+	constructor(x, y, w, h) {
 		this.x = x;
 		this.y = y;
 		this.width = w;
 		this.height = h;
 	}
 
-	intersects(b: Boundary) {
+	intersects(b) {
 		if (b.type === "circle") {
 			return b.intersects(this);
 		} else if (b.type === "rect") {
-			const bound = b as RectangleBoundary;
-
 			if (
-				this.x + this.width < bound.x ||
-				bound.x + bound.width < this.x ||
-				this.y + this.height < bound.y ||
-				bound.y + bound.height < this.y
+				this.x + this.width < b.x ||
+				b.x + b.width < this.x ||
+				this.y + this.height < b.y ||
+				b.y + b.height < this.y
 			)
 				return false;
 
@@ -90,7 +62,7 @@ class RectangleBoundary implements Boundary {
 		return false;
 	}
 
-	contains(p: Point) {
+	contains(p) {
 		return (
 			p.x <= this.x + this.width &&
 			p.x >= this.x &&
@@ -100,19 +72,8 @@ class RectangleBoundary implements Boundary {
 	}
 }
 
-export default class QuadTree {
-	boundary: RectangleBoundary;
-	capacity: number;
-	divided: boolean;
-
-	points: Point[];
-
-	one: QuadTree | null;
-	two: QuadTree | null;
-	three: QuadTree | null;
-	four: QuadTree | null;
-
-	constructor(boundary: RectangleBoundary, capacity = 4) {
+class QuadTree {
+	constructor(boundary, capacity = 4) {
 		// Max in each division
 		this.capacity = capacity;
 
@@ -131,7 +92,7 @@ export default class QuadTree {
 		this.points = [];
 	}
 
-	find(boundary: Boundary, points = []) {
+	find(boundary, points = []) {
 		if (!this.boundary.intersects(boundary)) return;
 
 		for (let i = 0; i < this.points.length; i++) {
@@ -149,7 +110,7 @@ export default class QuadTree {
 		return points;
 	}
 
-	add(p: Point) {
+	add(p) {
 		if (!this.boundary.contains(p)) return false;
 
 		if (this.points.length < this.capacity) {
