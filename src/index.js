@@ -2,15 +2,28 @@ let quad, boids;
 
 function setup() {
 	createCanvas(800, 600);
-	quad = new QuadTree(0, 0, width, height);
-	boids = new Array(1).fill(0).map(e => new Boid(width / 2, height / 2, 100));
+	quad = new QuadTree(new RectangleBoundary(0, 0, width, height));
+
+	boids = [];
+	for (let i = 0; i < 15; i++) {
+		boids.push(new Boid(random(width), random(height), 100, quad));
+	}
+
+	boids[0].tree = quad;
 }
 
 function draw() {
 	background(0);
 
+	quad.clear();
+	for (boid of boids) {
+		if (!quad.add(boid)) console.log("WHAT");
+	}
+
 	fill(255);
 	for (boid of boids) {
 		boid.draw();
+
+		boid.update();
 	}
 }

@@ -92,19 +92,32 @@ class QuadTree {
 		this.points = [];
 	}
 
-	find(boundary, points = []) {
+	clear() {
+		this.divided = false;
+		this.points = [];
+
+		this.one = null;
+		this.two = null;
+		this.three = null;
+		this.four = null;
+	}
+
+	find(boundary, notpoint = null, points = []) {
 		if (!this.boundary.intersects(boundary)) return;
 
 		for (let i = 0; i < this.points.length; i++) {
-			if (this.boundary.contains(this.points[i]))
+			if (
+				this.points[i] !== notpoint &&
+				boundary.contains(this.points[i])
+			)
 				points.push(this.points[i]);
 		}
 
 		if (this.divided) {
-			this.one.find(boundary, points);
-			this.two.find(boundary, points);
-			this.three.find(boundary, points);
-			this.four.find(boundary, points);
+			this.one.find(boundary, notpoint, points);
+			this.two.find(boundary, notpoint, points);
+			this.three.find(boundary, notpoint, points);
+			this.four.find(boundary, notpoint, points);
 		}
 
 		return points;
@@ -129,38 +142,38 @@ class QuadTree {
 	}
 
 	divide() {
-		const x = this.boundary.x;
-		const y = this.boundary.y;
-		const width = this.boundary.width;
-		const height = this.boundary.height;
+		const { x, y } = this.boundary;
+		const w = this.boundary.width;
+		const h = this.boundary.height;
 
-		const one = new RectangleBoundary(
-			width / 2 + x,
-			y,
-			width / 2,
-			height / 2
-		);
+		const one = new RectangleBoundary(w / 2 + x, y, w / 2, h / 2);
 		this.one = new QuadTree(one, this.capacity);
 
-		const two = new RectangleBoundary(x, y, width / 2, height / 2);
+		const two = new RectangleBoundary(x, y, w / 2, h / 2);
 		this.two = new QuadTree(two, this.capacity);
 
-		const three = new RectangleBoundary(
-			x,
-			height / 2 + y,
-			width / 2,
-			height / 2
-		);
+		const three = new RectangleBoundary(x, h / 2 + y, w / 2, h / 2);
 		this.three = new QuadTree(three, this.capacity);
 
-		const four = new RectangleBoundary(
-			width / 2 + x,
-			height / 2 + y,
-			width / 2,
-			height / 2
-		);
+		const four = new RectangleBoundary(w / 2 + x, h / 2 + y, w / 2, h / 2);
 		this.four = new QuadTree(four, this.capacity);
 
 		this.divided = true;
+	}
+
+	draw() {
+		if (this.divided) {
+			const { x, y } = this.boundary;
+			const w = this.boundary.width;
+			const h = this.boundary.height;
+			stroke(255);
+			line(x + w / 2, y, x + w / 2, y + h);
+			line(x, y + h / 2, x + w, y + h / 2);
+
+			this.one.draw();
+			this.two.draw();
+			this.three.draw();
+			this.four.draw();
+		}
 	}
 }
