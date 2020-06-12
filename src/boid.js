@@ -21,7 +21,7 @@ class Boid {
 			else ellipse(this.x, this.y, this.view.r);
 		}
 
-		const vec = this.velocity.copy().setMag(25);
+		const vec = this.velocity.copy().setMag(12);
 		const ort = vec.copy().rotate(Math.PI / 2);
 		ort.div(4);
 
@@ -71,6 +71,7 @@ class Boid {
 		this._acc = new p5.Vector();
 		this.align();
 		this.avoid();
+		this.group();
 		this._acc.limit(0.25);
 
 		this.velocity.x += this._acc.x;
@@ -79,7 +80,23 @@ class Boid {
 		if (this.velocity.mag() < 2) this.velocity.setMag(2);
 	}
 
+	group() {
+		if (this._neighbors.length === 0) return;
+
+		const acc = new p5.Vector();
+
+		for (const n of this._neighbors) {
+			acc.add(createVector(n.x - this.x, n.y - this.y));
+		}
+		acc.div(this._neighbors.length);
+		acc.limit(3);
+
+		this._acc.add(acc);
+	}
+
 	avoid() {
+		if (this._neighbors.length === 0) return;
+
 		const acc = new p5.Vector();
 
 		for (const n of this._neighbors) {
@@ -87,29 +104,31 @@ class Boid {
 			to.setMag(this.view.r / to.mag());
 			acc.add(to);
 		}
+		acc.limit(5);
 
 		// acc.limit(2);
 		this._acc.add(acc);
 	}
 
 	align() {
+		if (this._neighbors.length === 0) return;
+
 		const acc = new p5.Vector();
 
 		for (const n of this._neighbors) {
 			acc.add(n.velocity);
 		}
-		if (this._neighbors.length !== 0) {
-			acc.div(this._neighbors.length);
 
-			// Finding the orthongal correction
-			let c = this.velocity.dot(this.velocity);
-			c /= acc.dot(this.velocity);
-			acc.mult(c);
+		acc.div(this._neighbors.length);
 
-			acc.sub(this.velocity);
+		// Finding the orthongal correction
+		let c = this.velocity.dot(this.velocity);
+		c /= acc.dot(this.velocity);
+		acc.mult(c);
 
-			this._acc.add(acc);
-		}
+		acc.sub(this.velocity);
+
+		this._acc.add(acc);
 	}
 
 	findNeighbors() {

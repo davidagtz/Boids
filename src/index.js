@@ -5,8 +5,8 @@ function setup() {
 	quad = new QuadTree(new RectangleBoundary(0, 0, width, height));
 
 	boids = [];
-	for (let i = 0; i < 15; i++) {
-		boids.push(new Boid(random(width), random(height), 100, quad));
+	for (let i = 0; i < 200; i++) {
+		boids.push(new Boid(random(width), random(height), 50, quad));
 	}
 
 	boids[0].tree = quad;
@@ -26,5 +26,4 @@ function draw() {
 
 		boid.update();
 	}
-	// noLoop();
 }
