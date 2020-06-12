@@ -1,11 +1,13 @@
 let quad, boids;
 
 function setup() {
-	createCanvas(800, 600);
+	const body = document.getElementById("body");
+
+	createCanvas(body.clientWidth, body.clientHeight);
 	quad = new QuadTree(new RectangleBoundary(0, 0, width, height));
 
 	boids = [];
-	for (let i = 0; i < 200; i++) {
+	for (let i = 0; i < 1000; i++) {
 		boids.push(new Boid(random(width), random(height), 50, quad));
 	}
 
