@@ -45,10 +45,7 @@ class Boid {
 		// }
 	}
 
-	update() {
-		this.x += this.velocity.x;
-		this.y += this.velocity.y;
-
+	bounce() {
 		if (this.x < 0) {
 			this.x = 0;
 			this.velocity.x *= -1;
@@ -62,6 +59,31 @@ class Boid {
 		} else if (this.y > height) {
 			this.y = height;
 			this.velocity.y *= -1;
+		}
+	}
+
+	teleport() {
+		if (this.x < 0) {
+			this.x = width;
+		} else if (this.x > width) {
+			this.x = 0;
+		}
+		if (this.y < 0) {
+			this.y = height;
+		} else if (this.y > height) {
+			this.y = 0;
+		}
+	}
+
+	update(options = {}) {
+		console.log(options.bounded);
+		this.x += this.velocity.x;
+		this.y += this.velocity.y;
+
+		if (options.bounded) {
+			this.bounce();
+		} else {
+			this.teleport();
 		}
 
 		this.view.x = this.x;

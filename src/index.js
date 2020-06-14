@@ -1,17 +1,35 @@
 let quad, boids;
+let checkbox;
+let showTree = false,
+	isBounded = false;
 
 function setup() {
-	const body = document.getElementById("body");
+	const controls = document.getElementById("controls");
+	const bounded = createCheckbox("Bounded Box", isBounded);
+	bounded.parent(controls);
+	bounded.class("control");
+	bounded.changed(function() {
+		isBounded = this.checked();
+	});
 
-	createCanvas(body.clientWidth, body.clientHeight);
+	const show = createCheckbox("Show QuadTree", showTree);
+	show.parent(controls);
+	show.class("control");
+	show.changed(function() {
+		showTree = this.checked();
+	});
+
+	const parent = document.getElementById("canvas-body");
+	const cnv = createCanvas(0, 0);
+	cnv.parent(parent);
+	cnv.resize(parent.clientWidth, parent.clientHeight);
+
 	quad = new QuadTree(new RectangleBoundary(0, 0, width, height));
 
 	boids = [];
-	for (let i = 0; i < 1000; i++) {
+	for (let i = 0; i < 500; i++) {
 		boids.push(new Boid(random(width), random(height), 50, quad));
 	}
-
-	boids[0].tree = quad;
 }
 
 function draw() {
@@ -22,10 +40,16 @@ function draw() {
 		if (!quad.add(boid)) console.log("WHAT");
 	}
 
+	if (showTree) {
+		quad.draw();
+	}
+
 	fill(255);
 	for (boid of boids) {
 		boid.draw();
 
-		boid.update();
+		boid.update({
+			bounded: isBounded
+		});
 	}
 }
